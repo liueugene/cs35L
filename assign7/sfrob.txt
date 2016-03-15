@@ -1,0 +1,79 @@
+Performance comparison:
+
+Created test files with hexadecimal numbers on each line
+test1.txt - 100 lines
+test2.txt - 1000 lines
+test3.txt - 10000 lines
+test4.txt - 1000000 lines
+test5.txt - 10000000 lines
+
+===== sfrobu =====
+time ./sfrobu < test4.txt
+real 0m1.429s
+user 0m0.435s
+sys 0m0.745s
+
+time ./sfrobu < test5.txt
+real 0m15.283s
+user 0m5.641s
+sys 0m7.908s
+
+time ./sfrobu < /usr/local/cs/jdk*/jre/lib/rt.jar
+real 0m10.366s
+user 0m0.639s
+sys 0m1.190s
+
+===== original sfrob =====
+time ./sfrob < test4.txt
+real 0m1.555s
+user 0m0.631s
+sys 0m0.051s
+
+time ./sfrob < test5.txt
+real 0m16.485s
+user 0m7.818s
+sys 0m0.745s
+
+time ./sfrob < /usr/local/cs/jdk*/jre/lib/rt.jar
+real 0m10.579s
+user 0m2.448s
+sys 0m1.285s
+
+sfrobu uses less user time and real time overall, but takes up significantly more system time than the original sfrob.
+
+--------------------
+
+Comparisons by sfrobu:
+test1.txt - 468
+test2.txt - 7341
+test3.txt - 96082
+test4.txt - 14458032
+test5.txt - 166698161
+
+100 * log2(100) = 664
+1000 * log2(1000) = 9966
+10000 * log2(10000) = 132877
+1000000 * log2(1000000) = 19931569
+10000000 * log2(10000000) = 232534967
+
+Number of comparisons is approximately n * log2(n), where n is the number of lines
+
+--------------------
+
+Times for shell script sfrobs:
+time ./sfrobs < test4.txt
+real 0m1.271s
+user 0m0.291s
+sys 0m0.071s
+
+time ./sfrobs < test5.txt
+real 0m12.743s
+user 0m3.312s
+sys 0m0.869s
+
+time ./sfrobs < /usr/local/cs/jdk*/jre/lib/rt.jar
+real 0m10.215s
+user 0m0.857s
+sys 0m1.044s
+
+sfrobs uses less time overall than sfrobu and sfrob

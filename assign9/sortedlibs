@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export LC_ALL='C'
+lddList="$(ls /usr/bin | awk 'NR%101==204489665%101' | tr '\n' ' ')"
+
+cd /usr/bin
+
+ldd $lddList | sed -e 's/=>.*$//' -e 's/(0x.*)//' -e 's/^.*://' -e 's/^[ \t]*//' | sort -u

@@ -1,0 +1,45 @@
+1) Pseudocode:
+check number of arguments
+check operands for same length and duplicates
+while ch is not EOF:
+    read ch using getchar
+    if ch matches a character in "from", set ch to the corresponding
+    character in "to"
+    write ch with putchar
+    check for I/O errors
+
+    
+2) same as above, except it uses read and write instead of getchar and putchar
+
+
+3) head --bytes=5000000 /dev/urandom > test.txt
+    Outputs 5000000 random bytes to a file used for input testing
+
+copying one file to another:
+strace -o strace_output_fb ./tr2b 'a' 'b' < test.txt > fb.txt
+strace -o strace_output_fu ./tr2u 'a' 'b' < test.txt > fu.txt
+
+copying to terminal:
+strace -o strace_output_tb ./tr2b 'a' 'b' < test.txt   
+strace -o strace_output_tu ./tr2u 'a' 'b' < test.txt
+
+For the unbuffered tr, copying to another file and copying to the terminal produce nearly identical
+strace outputs. Each system call reads and writes one character at a time, which makes the program
+very slow.
+
+For the buffered tr, copying to another file uses much fewer system calls than to the terminal.
+Read and write calls to the file each process 4096 bytes at a time, but copying to the terminal results in
+many more writes at small buffer sizes.
+    
+    
+4) time ./tr2b 'a' 'b' < test.txt
+real 0m0.729s
+user 0m0.108s
+sys 0m0.084s
+
+time ./tr2u 'a' 'b' < test.txt
+real 0m7.924s
+user 0m0.204s
+sys 0m3.888s
+
+tr2u takes significantly longer to run than tr2b for the same input

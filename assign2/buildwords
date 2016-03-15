@@ -1,0 +1,4 @@
+#!/bin/bash
+
+export LC_ALL='C'
+cat $1 | grep '<td>' | sed -e 's/<[^>]*>//g' -e 's/^ *//g' -e 's/ *$//g' -e '/^$/d' -e '1~2d' -e 's/, /\n/g' -e 's/ /\n/g' | tr [:upper:] [:lower:] | tr \` \' | sort -u | sed '/^[pk\x27mnwlhaeiou]*$/!d'

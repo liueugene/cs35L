@@ -1,0 +1,25 @@
+1) Yes, the network is still secure because the data has been encrypted. Both the public and private
+keys are needed to decrypt the communication between the client and the server, so anyone just observing
+the bytes would not find any readable data.
+
+Even if the other team logged all of our keystrokes, they still would not have the keys stored on the
+client and server so the network would still be secure. Each pair of keys is generated uniquely by the system,
+so if someone were to try and create more pairs by copying our commands, the keys would not match
+and they would not be allowed to authenticate. However, while the network is secure, any messages
+typed out on either machine would be revealed in plaintext by the keylogger, so the data itself is not secure.
+
+If the other teams gained access to our USB drives, then it would no longer be secure. They could
+copy the public and private keys from the drives or install malware that would send the keys to them
+across the network. Once they obtain the actual keys, they can authenticate themselves using our
+identities and decrypt our communications.
+
+
+2) The verification process only makes sure that the file is the original copy from the sender and has
+not been tampered with. However, it does nothing to prove the identity of the person signing it. A user
+can type in any name and email address when they first generate the key pair, so it allows them to
+impersonate someone else's signature.
+
+To fix this problem, there would need to be a trustworthy third party known as a certificate authority
+that could verify a signer's identity and document their public key. The third party would then issue
+a certificate to match the signer's key. This way, someone could look at the certificate and trust that
+the signature is from a legitimate source.

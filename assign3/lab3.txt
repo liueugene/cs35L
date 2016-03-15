@@ -1,0 +1,87 @@
+--------------------
+Done on Ubuntu 15.04
+--------------------
+
+wget ftp://ftp.gnu.org/gnu/coreutils/coreutils-7.6.tar.gz
+
+tar -zxvf coreutils-7.6.tar.gz
+    Extracts the archive into the working directory
+    
+mv coreutils-7.6 ~/CS35L/coreutils-7.6
+    Moves the folder into the above directory
+
+mkdir ~/CS35L/coreutilsinstall
+cd ~/CS35L/coreutils-7.6
+./configure --prefix /home/eugene/CS35L/coreutilsinstall
+    Creates the install directory and configures the makefiles
+    
+make
+  CC     ls.o
+    needed to recompile ls with the patch
+  CCLD   dir
+    links dir which is a variant of ls that needs to be patched
+  CCLD   vdir
+    links vdir which is also a variant of ls that needs to be patched
+  CCLD   ls
+    links ls into an executable
+  GEN    dir.1
+  GEN    vdir.1
+  GEN    ls.1
+    generates the man files, not necessary because no user-facing
+    options were changed
+
+make install
+    Builds and installs coreutils into the coreutilsinstall directory
+
+locale
+    Shows that the system locale is already set to en_US.UTF-8
+    
+cd ../coreutilsinstall
+bin/ls -l
+    Runs the coreutils 7.6 version of ls showing the date display issue
+    
+cd ../coreutils-7.6
+emacs lspatch
+    Paste patch text into emacs and save file as lspatch
+    
+patch -p1 < lspatch
+    Patches ls.c
+    
+make
+    Builds the patched ls
+    
+src/ls -l
+    Runs the rebuilt ls showing the fix
+    
+cd ~/CS35L
+mkdir testdir
+cd testdir
+echo "test" > testfile
+echo "test2" > testfile2
+touch -t 199405060708.09 testfile2
+    Creates test files with recent and old timestamps
+    
+~/CS35L/coreutilsinstall/bin/ls -l
+    prints out:
+    total 8
+    -rw-rw-r-- 1 eugene eugene 5 2015-10-13 21:29 testfile
+    -rw-rw-r-- 1 eugene eugene 6 1994-05-06 07:08 testfile2
+
+~/CS35L/coreutils-7.6/src/ls -l
+    prints out:
+    total 8
+    -rw-rw-r-- 1 eugene eugene 5 Oct 13 21:29 testfile
+    -rw-rw-r-- 1 eugene eugene 6 May  6  1994 testfile2
+
+    
+Homework:
+cd ~/CS35L
+wget http://web.cs.ucla.edu/classes/fall15/cs35L/assign/randline.py
+chmod +x randline.py
+    Download and allow the script to be executable
+
+./randline.py /dev/null
+    Run the python script on /dev/null
+    
+python3 randline.py /dev/null
+    Run with python3

@@ -1,0 +1,42 @@
+2) git checkout v3.0 -b quote
+    Creates a new branch based on v3.0 named quote
+
+3) patch -p1 < quote-3.0-patch.txt
+    Patches cmp.c, diff.c, diff3.c, dir.c, sdiff.c, util.c
+
+4) C-h k C-x 4 a
+    Read the Emacs help for add-change-log-entry-other-window
+
+5) open each patched .c file and press C-x 4 a to generate a changelog
+   entry for it
+
+6) git add .
+   git commit -a -F ChangeLog
+   Use the changelog text as the commit message and automatically
+   stage all modified files
+
+7) git format-patch -1 --stdout > formatted-patch.txt
+    Creates the patch from the latest commit
+
+8) partner: Steven Xu
+   git checkout v3.0 -b partner
+   git am < partner-patch.txt
+   make
+   
+   Builds a new version using Steven's patch, also shows the fix when
+   running diff . - and diff --help
+
+9) make distdir
+    Builds diffutils in a new directory called diffutils-3.0.1-711a
+    
+   cd diffutils-3.0.1-711a
+   less ChangeLog
+    Shows the message for the newest commit at the top of ChangeLog
+
+10) ssh -X eugenel@lnxsrv.seas.ucla.edu
+    export PATH=$PATH:/usr/local/cs/bin
+    cd ~eggert/src/gnu/emacs
+    gitk
+    
+    Runs gitk for the Emacs source directory
+    Scrolled down to the last merge on 2015-01-25

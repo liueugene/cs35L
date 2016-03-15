@@ -1,0 +1,7 @@
+top:  Shows a list of commits with their authors and timestamps, plus a
+      diagram of the branches related to each commit on the left
+        
+bottom left:  Displays the full commit message and the changes to any files
+              in diff format
+        
+bottom right: List of files that were modified by the selected commit

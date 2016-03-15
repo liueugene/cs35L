@@ -1,0 +1,152 @@
+wget http://web.cs.ucla.edu/classes/fall15/cs35L/assign/coreutils-with-bug.tar.gz
+
+tar -zxvf coreutils-with-bug.tar.gz
+cd coreutils-with-bug
+    Extracts the coreutils archive into a new directory and moves into that
+    directory
+
+less INSTALL
+    Read how to build coreutils
+    
+./configure
+make
+    Tries to build the old coreutils but fails with this error:
+-------------------------------------------------------------------------------
+In file included from utimecmp.c:41:0:
+utimens.h:2:5: error: conflicting types for 'futimens'
+ int futimens (int, char const *, struct timespec const [2]);
+     ^
+In file included from utimecmp.h:25:0,
+                 from utimecmp.c:25:
+/usr/include/x86_64-linux-gnu/sys/stat.h:371:12: note: previous declaration of 'futimens' was here
+ extern int futimens (int __fd, const struct timespec __times[2]) __THROW;
+            ^
+-------------------------------------------------------------------------------
+
+futimens is already included in the GNU C library with a different function
+declaration, so it conflicts with the one defined within the coreutils source.
+The patch renames the futimens in coreutils to remove the conflict.
+
+wget http://web.cs.ucla.edu/classes/fall15/cs35L/assign/coreutils.diff
+patch -p0 < coreutils.diff
+    Downloads and applies the patch
+    
+make
+    Builds coreutils again, now it is successful
+    
+tmp=$(mktemp -d)
+cd $tmp
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+    Creates a temp directory with test files
+
+TZ=UTC0 ~/CS35L/assign5/coreutils-with-bug/src/ls -lt --full-time wwi-armistice now now1
+    Runs the buggy ls showing the problem:
+    -rw-rw-r-- 1 eugene eugene 0 1918-11-11 03:00:00.000000000 -0800 wwi-armistice
+    -rw-rw-r-- 1 eugene eugene 0 2015-10-27 20:11:19.122441013 -0700 now1
+    -rw-rw-r-- 1 eugene eugene 0 2015-10-27 20:11:17.410424915 -0700 now
+
+    wwi-armistice is shown at the top of the the list when it should be at the
+    bottom. now1 should be at the top because it was most recently modified.
+    
+Open up ls.c and look for where the buggy sorting should occur,
+cmp_ctime seems like a good function to set a breakpoint in
+    
+gdb ~/CS35L/assign5/coreutils-with-bug/src/ls
+    Opens gdb for the buggy ls
+    
+(gdb) break ls.c:cmp_ctime
+
+    cmp_ctime not found, probably need to recompile with the debugging option
+    -g to include the function information and -O0 to reduce optimizations
+    
+(gdb) quit
+cd ../coreutils-with-bug
+make clean
+./configure CFLAGS="-O0 -g"
+make
+    Rebuilds coreutils with a lower optimization setting and debugging
+    enabled
+    
+cd $tmp
+gdb ~/CS35L/assign5/coreutils-with-bug/src/ls
+
+(gdb) break ls.c:cmp_ctime
+(gdb) run -lt --full-time wwi-armistice now now1
+    Never reaches breakpoint, trying cmp_mtime instead
+    
+(gdb) break ls.c:cmp_mtime
+(gdb) run -lt --full-time wwi-armistice now now1
+
+Stepping through with "n" and "s" shows that there is a function timespec_cmp in timespec.h:
+timespec_cmp (a=..., b=...) at ../lib/timespec.h:48
+48        int diff = a.tv_sec - b.tv_sec;
+
+Printing diff shows that it contains very large values while
+iterating through the list of files, so it seems like integer overflow
+is occurring somewhere in the code.
+
+Opening timespec.h shows that there is an unchecked cast from time_t (long)
+to int in timespec_cmp. For large differences in time, the result of the subtraction
+would overflow a 32-bit integer, so I added extra code to check for integer overflows
+as a fix.
+
+cd ~/CS35L/assign5/coreutils-with-bug
+emacs lib/timespec.h
+Open emacs for timespec.h
+C-x 4 a to add new changelog entries
+
+cd ..
+make distclean
+mv coreutils.diff ../coreutils.diff
+    Remove extra binaries and configuration files from directory
+
+cd ..
+mv coreutils-with-bug fixed-coreutils
+tar -zxvf coreutils-with-bug.tar.gz
+    Rename the coreutils directory to fixed-coreutils and extracts the
+    original copy to the coreutils-with-bug directory
+    
+mv coreutils.diff coreutils-with-bug/coreutils.diff
+cd coreutils-with-bug
+patch -p0 < coreutils.diff
+mv coreutils.diff ../coreutils.diff
+    Applies the compile fix again to coreutils-with-bug
+    
+cd ..
+diff -pru coreutils-with-bug fixed-coreutils > lab5.diff
+    Create the patch
+    Manually removed sections that showed changes to auto-generated files
+    
+
+Test on SEASnet server home directory:
+
+cd ~/CS35L/assign5
+mkdir test
+touch -d '1918-11-11 11:00 GMT' wwi-armistice
+touch now
+sleep 1
+touch now1
+    Makes a directory with the test files
+
+TZ=UTC0 ls -lt --full-time
+    Shows the output:
+    total 0
+    -rw-r--r-- 1 eugenel csugrad 0 2054-12-17 17:28:16.000000000 +0000 wwi-armistice
+    -rw-r--r-- 1 eugenel csugrad 0 2015-10-30 02:46:26.456100000 +0000 now1
+    -rw-r--r-- 1 eugenel csugrad 0 2015-10-30 02:46:25.081963000 +0000 now
+
+df -T
+    Shows the filesystems of all drives and partitions
+
+The home directory is actually located on a separate server that uses the NFS 
+filesystem, while the temp directory is on the Linux server's ext4 filesystem. 
+NFS uses unsigned 32-bit integers to store the timestamps in seconds relative 
+to the Unix epoch (1970-01-01), but ext4 uses signed 32-bit integers.
+
+Since 1918 is before the epoch, the date is represented by a negative number
+on the Linux server. However, NFS interprets this value as an unsigned integer,
+treating it as some number of seconds after the epoch, so it gives wwi-armistice
+a date of 2054-12-17 instead.

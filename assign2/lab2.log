@@ -1,0 +1,505 @@
+"export LC_ALL='C'" to set locale to standard C locale
+
+"sort /usr/share/dict/words > words" to sort the words file and put the result
+in the working directory
+
+"wget http://web.cs.ucla.edu/classes/fall15/cs35L/assign/assign2.html"
+downloads the assignment page
+
+"(tr command) < assign2.html" sends the page as standard input
+
+tr -c 'A-Za-z' '[\n*]'
+    replace any characters that are not letters with newlines
+
+tr -cs 'A-Za-z' '[\n*]'
+    removes most of the newlines versus the previous output because they were
+    repeated many times, the -s option strips out repeat characters
+    
+tr -cs 'A-Za-z' '[\n*]' | sort
+    outputs the same words as the previous command but also sorts everything
+    in descending ASCII order
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u
+    like the previous command but removes all duplicate words
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm - words
+    feeds the result of the previous command and the words file to comm and
+    prints 3 columns:
+    * 1st column contains words unique to assign2.html
+    * 2nd column contains words unique to words file
+    * 3rd column contains words shared by both assign2.html and the words file
+
+tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words
+    only prints one column of words unique to assign2.html
+
+    
+"wget http://mauimapp.com/moolelo/hwnwdseng.htm" to download the Hawaiian
+words page
+
+-----
+buildwords script:
+#!/bin/bash
+export LC_ALL='C'
+cat $1 | grep '<td>' | sed -e 's/<[^>]*>//g' -e 's/^ *//g' -e 's/ *$//g'
+-e '/^$/d' -e '1~2d' -e 's/, /\n/g' -e 's/ /\n/g' | tr [:upper:] [:lower:]
+| tr \` \' | sort -u | sed '/^[pk\x27mnwlhaeiou]*$/!d'
+-----
+
+write the list of sorted Hawaiian words to the file hwords
+"cat hwnwdseng.htm | ./buildwords > hwords"
+
+runs a Hawaiian spell check on lowercased assign2.html:
+"cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] | sort -u
+| comm -23 - hwords"
+
+count misspellings from the above output using "wc -w"
+English spell check: 80
+Hawaiian spell check: 405
+
+check spelling against hwords itself (results in no output):
+"cat hwords | comm -23 - hwords"
+
+
+Store results of English spell check into the file echeck.txt:
+"cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | sort -u | comm -23 - words
+> echeck.txt"
+Hawaiian spell check into hcheck.txt:
+"cat assign2.html | tr -cs 'A-Za-z' '[\n*]' | tr [:upper:] [:lower:] | sort -u
+| comm -23 - hwords > hcheck.txt"
+
+English and not Hawaiian misspellings (from "comm -23 echeck.txt hcheck.txt"):
+ALL
+All
+Are
+Assignment
+Assume
+Automate
+CTYPE
+Check
+Content
+Create
+DOCTYPE
+DTD
+Describe
+Do
+EN
+Eggert
+Eword
+Exp
+Extract
+Find
+HTML
+Hard
+Hint
+Homework
+However
+Hword
+Input
+Keep
+Laboratory
+Linux
+Modify
+PUBLIC
+SEASnet
+Some
+Sort
+Spell
+Submit
+Suppose
+Then
+This
+To
+Type
+UTF
+Use
+VanDeBogart
+We
+Wget
+Write
+You
+Your
+Za
+halau
+lau
+wiki
+
+Hawaiian and not English misspellings (from "comm -13 echeck.txt hcheck.txt"):
+a
+able
+about
+above
+abovementioned
+accent
+address
+after
+afterwards
+against
+all
+also
+an
+and
+any
+apostrophe
+are
+argument
+arguments
+as
+ascii
+assign
+assignment
+assume
+assumption
+attempt
+automate
+awk
+b
+bar
+be
+before
+being
+body
+br
+briefly
+bug
+bugs
+but
+by
+c
+can
+capitalized
+carriage
+case
+cased
+cases
+cat
+change
+chap
+characters
+check
+checked
+checker
+checkers
+checking
+checks
+columns
+com
+comm
+command
+commands
+commas
+contain
+containing
+contains
+content
+contents
+convenience
+copy
+copying
+copyright
+count
+create
+crude
+cs
+ctype
+d
+describe
+described
+detail
+dict
+dictionary
+did
+differs
+directories
+directory
+disk
+do
+doctype
+doesn
+don
+down
+dtd
+duplicate
+duplicates
+each
+en
+english
+entries
+equiv
+equivalent
+equivalents
+error
+eword
+examine
+example
+examples
+exp
+export
+extract
+fetch
+file
+files
+find
+finds
+first
+fix
+following
+foo
+for
+formatted
+from
+generally
+give
+given
+gnu
+grave
+gt
+h
+hand
+handle
+happened
+hard
+has
+hawaiian
+head
+hint
+homework
+hosts
+how
+however
+hr
+hword
+id
+if
+ignore
+immediately
+implementation
+improperly
+in
+input
+into
+introductory
+is
+it
+its
+itself
+just
+k
+keep
+l
+lab
+laboratory
+language
+last
+later
+lc
+leading
+length
+less
+let
+letters
+lexicographically
+li
+like
+line
+link
+links
+linux
+list
+ln
+locale
+log
+lots
+lower
+lt
+m
+mail
+many
+may
+mentioned
+merely
+meta
+misspelled
+modify
+more
+multiple
+n
+name
+named
+names
+naming
+need
+no
+non
+not
+note
+notebook
+nothing
+number
+o
+obtain
+occurrence
+of
+on
+one
+only
+or
+ordinary
+org
+orthography
+other
+others
+output
+outputs
+p
+page
+particular
+paul
+people
+per
+performed
+please
+portable
+position
+posix
+pre
+prefer
+prepared
+previous
+problem
+problems
+project
+public
+pubs
+putting
+r
+rather
+re
+read
+readable
+reading
+record
+recursively
+regular
+reject
+remaining
+removing
+repair
+replace
+replaces
+report
+represent
+reproduce
+result
+resulting
+results
+returns
+right
+rules
+run
+runnable
+running
+s
+samp
+save
+script
+scripting
+seasnet
+see
+share
+shell
+should
+shown
+silently
+similarly
+simple
+since
+single
+so
+software
+some
+sort
+sorted
+sorting
+space
+spaces
+special
+spell
+spelling
+standard
+start
+steve
+strict
+subdirectories
+submit
+substitutions
+such
+supports
+suppose
+sure
+symbolic
+system
+systematic
+systematically
+t
+tables
+tag
+take
+takes
+test
+text
+than
+that
+the
+their
+them
+then
+there
+these
+they
+thing
+this
+title
+to
+tr
+traditional
+transcript
+treat
+true
+two
+type
+typed
+u
+under
+unique
+upper
+use
+user
+using
+utf
+utilities
+v
+vandebogart
+var
+w
+want
+we
+web
+were
+what
+where
+which
+whose
+why
+with
+word
+words
+work
+working
+worry
+write
+x
+y
+you
+your
+z
+za

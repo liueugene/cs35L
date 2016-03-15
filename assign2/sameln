@@ -1,0 +1,47 @@
+#!/bin/bash
+export LC_ALL='C'
+shopt -s dotglob # shows files starting with .
+dir=$1
+declare -a array
+let size=0
+
+# get files in directory
+for file in $dir/*
+do
+    if [ ! -L "$file" -a -f "$file" ]
+    then
+        array[$size]="$file"
+        let size=size+1
+    fi
+done
+
+# hardlink all duplicates
+for ((i=0; i<size; i++))
+do
+    if [ -z "${array[i]}" ] # element was unset so skip it
+    then
+        continue
+    fi
+    
+    for ((j=i+1; j<size; j++))
+    do
+        if [ -z "${array[j]}" ] # element was unset so skip it
+        then
+            continue
+        fi
+        
+        cmp -s -- "${array[i]}" "${array[j]}" # compare files
+        result=$? # store exit code to check for error
+
+        if [ $result -eq 0 ]
+        then
+            rm "${array[j]}"
+            ln "${array[i]}" "${array[j]}"
+            echo "${array[j]} hardlinked to ${array[i]}"
+            unset array[j] # no need to compare again after hardlinking
+        elif [ $result -eq 2 ] # some error happened
+        then
+            echo "error reading file"
+        fi
+    done
+done

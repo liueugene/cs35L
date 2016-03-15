@@ -1,0 +1,45 @@
+Running on Kubuntu 15.10
+
+Partner: Cameron Ito
+
+sudo apt-get install openssh-server
+sudo apt-get install openssh-client
+    Installs OpenSSH
+    
+ssh-keygen
+    Generates the public and private keys
+    
+setting up the client
+---------------------
+ssh-copy-id -i eugene@128.97.212.114
+    Copies my public key to the server
+    
+ssh-add
+    Adds the private key to the authentication agent
+    
+ssh -X eugene@128.97.212.114
+    SSH to the server
+
+$ firefox
+    Launches Firefox on the remote machine and displays it on my screen
+    
+
+server
+------------------------
+sudo useradd -d /home/cameron -m cameron
+sudo passwd cameron
+    Creates an account for the client
+    
+cd /home/cameron
+sudo mkdir .ssh
+    Creates the ssh directory for the client
+    
+sudo chown -R cameron .ssh
+sudo chmod 700 .ssh
+    Gives the client ownership and permissions for the directory
+    
+sudo vim /etc/ssh/sshd_config
+    Open vim to change PasswordAuthentication to no
+    
+ifconfig
+    Shows my IP address is 169.232.114.84

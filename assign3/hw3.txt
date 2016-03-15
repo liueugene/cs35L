@@ -1,0 +1,19 @@
+Q1) case_long_iso_time_style is a label that is referenced by the goto further
+    down in the switch statement. Since the patch removed the goto, there was
+    no need to keep that label. It was not necessary to remove the line, but
+    then it would become a useless label taking up space.
+
+Q2) The original code searches for the date format used in the current locale,
+    and if nothing is found, it falls back on the ISO ordering. The patched
+    version removes the fallback so that the original Unix format is used.
+    This could cause confusion in countries that use a different format,
+    and break applications that expect a certain format in each locale when
+    trying to read the output of ls.
+
+Q3) The script prints a list index out of range error because /dev/null is
+    a blank file. When line 275 in random.py tries to access an element
+    in the empty list of lines, it raises an error.
+
+Q4) It notes a syntax error on line 65 because Python 3 removes tuple
+    parameter unpacking from the language. errno and strerror must now be
+    unpacked and assigned on separate lines.
